@@ -5,7 +5,6 @@
  *   - yyyy-MM-dd  — задачи на конкретный день
  *   - goals       — цели
  *   - everyday    — ежедневные задачи
- *   - done        — выполненные задачи
  *
  * Данные каждого ключа — JSON-массив задач: Task[]
  */
@@ -51,21 +50,64 @@ async function getTasksForKey(key: string): Promise<Task[]> {
   return data[key] ?? [];
 }
 
+// ─── Утилиты для работы с датами ─────────────────────────────────────────────
+
+const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function toDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function addDays(date: Date, n: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+/** Генерирует ключи с сегодняшнего дня на N дней вперёд (включая сегодня). */
+function futureDateKeys(n: number): string[] {
+  const today = new Date();
+  return Array.from({ length: n + 1 }, (_, i) => toDateKey(addDays(today, i)));
+}
+
 // ─── Публичный интерфейс хранилища ───────────────────────────────────────────
 
 export const vkStorage = {
   /**
-   * Загружает все ключи из VK Storage и возвращает полный объект StorageData.
-   * Служебные ключи (goals, everyday, done) всегда включаются в результат.
+   * Загружает данные из VK Storage и возвращает полный объект StorageData.
+   *
+   * Стратегия формирования набора ключей:
+   *   1. Служебные ключи: goals, everyday (всегда присутствуют).
+   *   2. Прошлые дни: все ключи формата yyyy-MM-dd из VK Storage,
+   *      которые ≤ сегодня (уже сохранённые дни пользователя).
+   *   3. Будущие дни: сегодня + 7 дней вперёд (гарантируем наличие слотов).
    */
   async getAll(): Promise<StorageData> {
-    const ALWAYS_KEYS = ['goals', 'everyday', 'done'];
-    const allKeys = await storageGetKeys();
-    // Дедупликация: объединяем реальные ключи со служебными
-    const keysToFetch = Array.from(new Set([...allKeys, ...ALWAYS_KEYS]));
+    const ALWAYS_KEYS = ['goals', 'everyday'];
+    const todayKey = toDateKey(new Date());
+
+    // Получаем все ключи из хранилища
+    const storedKeys = await storageGetKeys();
+
+    // Оставляем только прошлые/сегодняшние дни из уже сохранённых ключей
+    const pastDayKeys = storedKeys.filter(
+      (k) => DATE_KEY_RE.test(k) && k <= todayKey,
+    );
+
+    // Следующие 7 дней (включая сегодня)
+    const nextSevenDayKeys = futureDateKeys(7);
+
+    const keysToFetch = Array.from(
+      new Set([...ALWAYS_KEYS, ...pastDayKeys, ...nextSevenDayKeys]),
+    );
+
     const data = await storageGet(keysToFetch);
-    // Гарантируем, что служебные ключи всегда есть в результате
-    for (const k of ALWAYS_KEYS) {
+
+    // Гарантируем наличие всех запрошенных ключей в результате
+    for (const k of keysToFetch) {
       if (!data[k]) data[k] = [];
     }
     return data;
