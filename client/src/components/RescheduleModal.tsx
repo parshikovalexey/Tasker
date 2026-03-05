@@ -4,10 +4,60 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Minus, CalendarIcon } from "lucide-react";
+import { Plus, Minus, CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatFriendlyDate, formatDateKey } from "@/lib/dateUtils";
-import { addDays, subDays, startOfMonth } from "date-fns";
+import { addDays, subDays, startOfMonth, format } from "date-fns";
+import { ru } from "date-fns/locale";
 import { useMoveTask, useAddTask } from "@/hooks/use-tasks";
+import { useNavigation, type CaptionProps } from "react-day-picker";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+
+function CalendarCaption({ displayMonth }: CaptionProps, onGoToday: () => void) {
+  const { goToMonth, previousMonth, nextMonth } = useNavigation();
+
+  return (
+    <div className="flex flex-col gap-1 px-1 pt-1">
+      <div className="text-sm font-medium text-center capitalize">
+        {format(displayMonth, "LLLL yyyy", { locale: ru })}
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          aria-label="Предыдущий месяц"
+          onClick={() => previousMonth && goToMonth(previousMonth)}
+          disabled={!previousMonth}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 px-3 text-xs rounded-md"
+          onClick={onGoToday}
+        >
+          Сегодня
+        </Button>
+
+        <button
+          aria-label="Следующий месяц"
+          onClick={() => nextMonth && goToMonth(nextMonth)}
+          disabled={!nextMonth}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 interface RescheduleModalProps {
   isOpen: boolean;
@@ -56,6 +106,10 @@ export function RescheduleModal({
     });
   };
 
+  const handleGoToday = () => {
+    setCalendarMonth(startOfMonth(new Date()));
+  };
+
   const handleSave = () => {
     if (!text.trim()) return;
     const toKey = formatDateKey(date);
@@ -67,6 +121,8 @@ export function RescheduleModal({
   };
 
   const isPending = isCreateMode ? addTask.isPending : moveTask.isPending;
+
+  const CustomCaption = (props: CaptionProps) => CalendarCaption(props, handleGoToday);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -105,19 +161,9 @@ export function RescheduleModal({
                   onSelect={handleSelectDate}
                   month={calendarMonth}
                   onMonthChange={setCalendarMonth}
+                  components={{ Caption: CustomCaption }}
                   initialFocus
                 />
-                <div className="px-3 pb-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="button-calendar-today"
-                    className="w-full rounded-lg text-sm"
-                    onClick={() => setCalendarMonth(startOfMonth(new Date()))}
-                  >
-                    Сегодня
-                  </Button>
-                </div>
               </PopoverContent>
             </Popover>
 
