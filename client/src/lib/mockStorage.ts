@@ -35,7 +35,7 @@ let memoryStorage: StorageData = {
   ],
   [todayKey]: [
     { id: uuidv4(), text: 'Сделать тестовое задание для VK', color: 'critical' },
-    { id: uuidv4(), text: 'Купить продукты (молоко, хлеб, овощи)', color: 'green' },
+    { id: uuidv4(), text: 'Купить продукты (молоко, хлеб, овощи)' },
     { id: uuidv4(), text: 'Позвонить в банк' },
   ],
   [tomorrowKey]: [

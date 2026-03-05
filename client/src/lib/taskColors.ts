@@ -39,14 +39,6 @@ export const TASK_COLORS: TaskColor[] = [
     card: 'bg-blue-100 border-blue-300 dark:bg-blue-900/50 dark:border-blue-500/70',
   },
   {
-    id: 'green',
-    label: '',
-    swatch: '#22c55e',
-    storageKey: null,
-    // более насыщенный зелёный — явно отличается от cyan Everyday
-    card: 'bg-green-200 border-green-400 dark:bg-green-900/50 dark:border-green-500/70',
-  },
-  {
     id: 'rose',
     label: '',
     swatch: '#f43f5e',
