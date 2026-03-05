@@ -25,8 +25,20 @@ export function useAddTask() {
 export function useMoveTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, from, to, text }: { id: string; from: string; to: string; text?: string }) => {
-      return mockStorage.moveTask(id, from, to, text);
+    mutationFn: async ({
+      id,
+      from,
+      to,
+      text,
+      color,
+    }: {
+      id: string;
+      from: string;
+      to: string;
+      text?: string;
+      color?: string;
+    }) => {
+      return mockStorage.moveTask(id, from, to, text, color);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY });

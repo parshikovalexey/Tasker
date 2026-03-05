@@ -92,6 +92,7 @@ export function DayGroup({ dayKey, tasks, isOverdue = false, defaultOpen = true,
                     key={task.id}
                     id={task.id}
                     text={task.text}
+                    color={task.color}
                     dayKey={actualKey}
                     isActionable={!isGoalOrEveryday && dayKey !== 'done'}
                     isOverdue={isOverdue}
