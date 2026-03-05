@@ -88,4 +88,20 @@ export const mockStorage = {
     await delay(50);
     return JSON.parse(JSON.stringify(memoryStorage[key] || []));
   },
+
+  async getAllKeys(): Promise<string[]> {
+    await delay(50);
+    return Object.keys(memoryStorage);
+  },
+
+  async getFullSnapshot(): Promise<{ keys: string[]; data: StorageData }> {
+    await delay(100);
+    const data: StorageData = JSON.parse(JSON.stringify(memoryStorage));
+    return { keys: Object.keys(data), data };
+  },
+
+  async clearKey(key: string): Promise<void> {
+    await delay(50);
+    memoryStorage[key] = [];
+  },
 };

@@ -177,4 +177,36 @@ export const vkStorage = {
   async loadKey(key: string): Promise<Task[]> {
     return getTasksForKey(key);
   },
+
+  /**
+   * Возвращает список всех ключей из VK Storage.
+   */
+  async getAllKeys(): Promise<string[]> {
+    return storageGetKeys();
+  },
+
+  /**
+   * Загружает все ключи и их значения из VK Storage (батчинг по 100).
+   */
+  async getFullSnapshot(): Promise<{ keys: string[]; data: StorageData }> {
+    const keys = await storageGetKeys();
+    if (keys.length === 0) return { keys: [], data: {} };
+
+    // VK Bridge: максимум 100 ключей на запрос
+    const BATCH = 100;
+    const merged: StorageData = {};
+    for (let i = 0; i < keys.length; i += BATCH) {
+      const batch = keys.slice(i, i + BATCH);
+      const chunk = await storageGet(batch);
+      Object.assign(merged, chunk);
+    }
+    return { keys, data: merged };
+  },
+
+  /**
+   * Очищает ключ в VK Storage (записывает пустую строку).
+   */
+  async clearKey(key: string): Promise<void> {
+    await bridge.send('VKWebAppStorageSet', { key, value: '' });
+  },
 };

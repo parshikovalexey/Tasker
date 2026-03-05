@@ -2,38 +2,16 @@ import { useState } from "react";
 import { useTasks } from "@/hooks/use-tasks";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DayGroup } from "@/components/DayGroup";
+import { ExportModal } from "@/components/ExportModal";
 import { isPastDay, formatDateKey } from "@/lib/dateUtils";
-import { storage } from "@/lib/storage";
-import { exportDoneTasks, exportAllTasks } from "@/lib/csvExport";
 import { addDays } from "date-fns";
-import { CheckSquare, CheckCheck, Sheet, Loader2 } from "lucide-react";
+import { CheckSquare, Download } from "lucide-react";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Main() {
   const { data: storageData, isLoading } = useTasks();
-  const [exportingDone, setExportingDone] = useState(false);
-  const [exportingAll, setExportingAll] = useState(false);
-
-  async function handleExportDone() {
-    setExportingDone(true);
-    try {
-      const tasks = await storage.loadKey('done');
-      exportDoneTasks(tasks);
-    } finally {
-      setExportingDone(false);
-    }
-  }
-
-  function handleExportAll() {
-    if (!storageData) return;
-    setExportingAll(true);
-    try {
-      exportAllTasks(storageData);
-    } finally {
-      setExportingAll(false);
-    }
-  }
+  const [exportOpen, setExportOpen] = useState(false);
 
   if (isLoading || !storageData) {
     return (
@@ -72,49 +50,30 @@ export default function Main() {
         </Link>
 
         <div className="flex items-center gap-1">
-          {/* Экспорт выполненных задач */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                data-testid="button-export-done"
-                onClick={handleExportDone}
-                disabled={exportingDone}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                data-testid="button-open-export"
+                onClick={() => setExportOpen(true)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                {exportingDone
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <CheckCheck className="w-4 h-4" />
-                }
+                <Download className="w-4 h-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>Выгрузить выполненные задачи (done)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Экспорт всех задач */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                data-testid="button-export-all"
-                onClick={handleExportAll}
-                disabled={exportingAll}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-              >
-                {exportingAll
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <Sheet className="w-4 h-4" />
-                }
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Выгрузить все загруженные задачи</p>
+              <p>Экспорт данных</p>
             </TooltipContent>
           </Tooltip>
 
           <ThemeToggle />
         </div>
       </header>
+
+      <ExportModal
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        loadedStorage={storageData}
+      />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth">
