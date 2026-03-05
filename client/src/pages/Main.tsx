@@ -68,7 +68,7 @@ export default function Main() {
           <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
             <CheckSquare className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-xl font-display font-bold">Планнер</h1>
+          <h1 className="text-xl font-display font-bold">Погнали</h1>
         </Link>
 
         <div className="flex items-center gap-1">
