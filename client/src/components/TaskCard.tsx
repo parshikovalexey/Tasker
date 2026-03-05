@@ -53,14 +53,13 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
     <>
       <div
         className={cn(
-          "group relative rounded-2xl p-4 mb-3 border transition-all duration-200",
-          "shadow-sm hover:shadow-md",
+          "group relative rounded-2xl p-4 mb-3 border transition-all duration-200 shadow-sm hover:shadow-md",
           cardBase
         )}
       >
         <div className="flex gap-3">
           <div className="flex-1 min-w-0">
-            {/* Source badge from DayGroup (goals/everyday origin) */}
+            {/* Source badge (goals/everyday origin from DayGroup) */}
             {badgeLabel && (
               <Badge
                 variant="secondary"
@@ -70,11 +69,12 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
               </Badge>
             )}
 
-            {/* Color category badge (Critical / named colors without source badge) */}
+            {/* Named color badge with the actual swatch color */}
             {showColorBadge && (
               <Badge
                 variant="outline"
-                className={cn("mb-2 text-[10px] uppercase tracking-wider font-semibold border", taskColor!.badge)}
+                className="mb-2 text-[10px] uppercase tracking-wider font-semibold border-0 text-white"
+                style={{ backgroundColor: taskColor!.swatch }}
               >
                 {taskColor!.label}
               </Badge>

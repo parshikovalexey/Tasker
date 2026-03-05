@@ -127,43 +127,61 @@ export function RescheduleModal({
         <div className="space-y-4">
           {/* Color picker */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* No color option */}
+            {/* No color — small neutral pill */}
             <button
               data-testid="color-none"
               onClick={() => setColorId(undefined)}
               className={cn(
-                "h-7 w-7 rounded-full border-2 transition-all flex items-center justify-center bg-muted",
+                "h-7 px-3 rounded-full border-2 transition-all flex items-center justify-center bg-muted text-[11px] font-medium text-muted-foreground",
                 !colorId
-                  ? "border-foreground/50 scale-110"
-                  : "border-border hover:border-foreground/30"
+                  ? "border-foreground/40 ring-1 ring-foreground/20"
+                  : "border-border hover:border-foreground/20"
               )}
-              title="Без цвета"
             >
-              {!colorId && <Check className="h-3.5 w-3.5 text-foreground/60" />}
+              {!colorId ? <Check className="h-3 w-3 mr-1 opacity-60" /> : null}
+              Без цвета
             </button>
 
-            {TASK_COLORS.map((c) => (
-              <button
-                key={c.id}
-                data-testid={`color-${c.id}`}
-                onClick={() => setColorId(c.id)}
-                title={c.label || c.id}
-                className={cn(
-                  "h-7 w-7 rounded-full border-2 transition-all flex items-center justify-center",
-                  colorId === c.id
-                    ? "border-foreground/60 scale-110 shadow-sm"
-                    : "border-transparent hover:scale-105"
-                )}
-                style={{ backgroundColor: c.swatch }}
-              >
-                {colorId === c.id && <Check className="h-3.5 w-3.5 text-white drop-shadow" />}
-              </button>
-            ))}
-
-            {selectedColor?.label && (
-              <span className="text-xs text-muted-foreground ml-1 font-medium">
-                {selectedColor.label}
-              </span>
+            {TASK_COLORS.map((c) =>
+              c.label ? (
+                /* Named colors — elongated pill with name */
+                <button
+                  key={c.id}
+                  data-testid={`color-${c.id}`}
+                  onClick={() => setColorId(c.id)}
+                  className={cn(
+                    "h-7 px-3 rounded-full border-2 transition-all flex items-center gap-1 text-[11px] font-semibold text-white",
+                    colorId === c.id
+                      ? "border-white/70 ring-2 shadow-md scale-105"
+                      : "border-transparent hover:scale-105 hover:brightness-110"
+                  )}
+                  style={{
+                    backgroundColor: c.swatch,
+                    outline: colorId === c.id ? `2px solid ${c.swatch}` : 'none',
+                    outlineOffset: '2px',
+                  }}
+                >
+                  {colorId === c.id && <Check className="h-3 w-3 flex-shrink-0" />}
+                  {c.label}
+                </button>
+              ) : (
+                /* Unnamed colors — small circle */
+                <button
+                  key={c.id}
+                  data-testid={`color-${c.id}`}
+                  onClick={() => setColorId(c.id)}
+                  title={c.id}
+                  className={cn(
+                    "h-7 w-7 rounded-full border-2 transition-all flex items-center justify-center",
+                    colorId === c.id
+                      ? "border-foreground/60 scale-110 shadow-sm ring-1 ring-foreground/20"
+                      : "border-transparent hover:scale-105"
+                  )}
+                  style={{ backgroundColor: c.swatch }}
+                >
+                  {colorId === c.id && <Check className="h-3.5 w-3.5 text-white drop-shadow" />}
+                </button>
+              )
             )}
           </div>
 

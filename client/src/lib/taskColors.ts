@@ -4,7 +4,6 @@ export type TaskColor = {
   swatch: string;
   storageKey: string | null;
   card: string;
-  badge: string;
 };
 
 export const TASK_COLORS: TaskColor[] = [
@@ -13,56 +12,52 @@ export const TASK_COLORS: TaskColor[] = [
     label: 'Goal',
     swatch: '#8b5cf6',
     storageKey: 'goals',
-    card: 'bg-violet-50 border-violet-200 dark:bg-violet-950/25 dark:border-violet-700/40',
-    badge: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-700/40',
+    // violet — насыщенный фиолетовый фон
+    card: 'bg-violet-100 border-violet-300 dark:bg-violet-900/50 dark:border-violet-500/70',
   },
   {
     id: 'everyday',
     label: 'Everyday',
-    swatch: '#f97316',
+    swatch: '#06b6d4',
     storageKey: 'everyday',
-    card: 'bg-orange-50 border-orange-200 dark:bg-orange-950/25 dark:border-orange-700/40',
-    badge: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700/40',
+    // cyan — бирюзово-голубой, явно отличается от violet и orange
+    card: 'bg-cyan-100 border-cyan-300 dark:bg-cyan-900/50 dark:border-cyan-500/70',
   },
   {
     id: 'critical',
     label: 'Critical',
-    swatch: '#f59e0b',
+    swatch: '#f97316',
     storageKey: null,
-    card: 'bg-amber-50 border-amber-300 dark:bg-amber-950/25 dark:border-amber-600/40',
-    badge: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-600/40',
+    // orange — ярко-оранжевый, явно отличается от violet и cyan, не конфликтует с красным
+    card: 'bg-orange-100 border-orange-300 dark:bg-orange-900/50 dark:border-orange-500/70',
   },
   {
     id: 'blue',
     label: '',
     swatch: '#3b82f6',
     storageKey: null,
-    card: 'bg-blue-50 border-blue-200 dark:bg-blue-950/25 dark:border-blue-700/40',
-    badge: '',
+    card: 'bg-blue-100 border-blue-300 dark:bg-blue-900/50 dark:border-blue-500/70',
   },
   {
     id: 'green',
     label: '',
-    swatch: '#10b981',
+    swatch: '#22c55e',
     storageKey: null,
-    card: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/25 dark:border-emerald-700/40',
-    badge: '',
+    card: 'bg-green-100 border-green-300 dark:bg-green-900/50 dark:border-green-500/70',
   },
   {
     id: 'rose',
     label: '',
-    swatch: '#ec4899',
+    swatch: '#f43f5e',
     storageKey: null,
-    card: 'bg-pink-50 border-pink-200 dark:bg-pink-950/25 dark:border-pink-700/40',
-    badge: '',
+    card: 'bg-rose-100 border-rose-300 dark:bg-rose-900/50 dark:border-rose-500/70',
   },
   {
-    id: 'teal',
+    id: 'slate',
     label: '',
-    swatch: '#14b8a6',
+    swatch: '#64748b',
     storageKey: null,
-    card: 'bg-teal-50 border-teal-200 dark:bg-teal-950/25 dark:border-teal-700/40',
-    badge: '',
+    card: 'bg-slate-100 border-slate-300 dark:bg-slate-800/60 dark:border-slate-500/70',
   },
 ];
 
