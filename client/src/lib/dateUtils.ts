@@ -1,5 +1,5 @@
 import { 
-  addDays, subDays, addMonths, 
+  addDays, subDays, addMonths, addYears,
   isSaturday, isSunday, 
   nextMonday, nextWednesday, nextTuesday, nextThursday, nextFriday, nextSaturday, nextSunday,
   isBefore, format, parse, startOfDay, isPast, isToday as dateFnsIsToday
@@ -28,6 +28,8 @@ export function calculateDate(action: string, baseDate: Date = new Date()): Date
       return getNextWorkingDay(addDays(baseDate, 7));
     case 'Через месяц':
       return getPrevWorkingDay(addMonths(baseDate, 1));
+    case 'Через год':
+      return getPrevWorkingDay(addYears(baseDate, 1));
     case 'Пн/Ср': {
       const m = nextMonday(baseDate);
       const w = nextWednesday(baseDate);

@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Plus, Minus, CalendarIcon } from "lucide-react";
 import { formatFriendlyDate, formatDateKey } from "@/lib/dateUtils";
-import { addDays, subDays } from "date-fns";
+import { addDays, subDays, startOfMonth } from "date-fns";
 import { useMoveTask, useAddTask } from "@/hooks/use-tasks";
 
 interface RescheduleModalProps {
@@ -27,6 +27,7 @@ export function RescheduleModal({
   fromKey,
 }: RescheduleModalProps) {
   const [date, setDate] = useState<Date>(initialDate);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(startOfMonth(initialDate));
   const [text, setText] = useState(initialText);
   const moveTask = useMoveTask();
   const addTask = useAddTask();
@@ -36,9 +37,24 @@ export function RescheduleModal({
   useEffect(() => {
     if (isOpen) {
       setDate(initialDate);
+      setCalendarMonth(startOfMonth(initialDate));
       setText(initialText);
     }
   }, [isOpen, initialDate, initialText]);
+
+  const handleSelectDate = (d: Date | undefined) => {
+    if (!d) return;
+    setDate(d);
+    setCalendarMonth(startOfMonth(d));
+  };
+
+  const handleAdjustDate = (delta: number) => {
+    setDate((d) => {
+      const next = delta > 0 ? addDays(d, 1) : subDays(d, 1);
+      setCalendarMonth(startOfMonth(next));
+      return next;
+    });
+  };
 
   const handleSave = () => {
     if (!text.trim()) return;
@@ -75,6 +91,7 @@ export function RescheduleModal({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  data-testid="button-open-calendar"
                   className="w-full h-12 rounded-xl border-border/50 bg-background font-medium text-base transition-all"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
@@ -85,9 +102,22 @@ export function RescheduleModal({
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(d) => d && setDate(d)}
+                  onSelect={handleSelectDate}
+                  month={calendarMonth}
+                  onMonthChange={setCalendarMonth}
                   initialFocus
                 />
+                <div className="px-3 pb-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-calendar-today"
+                    className="w-full rounded-lg text-sm"
+                    onClick={() => setCalendarMonth(startOfMonth(new Date()))}
+                  >
+                    Сегодня
+                  </Button>
+                </div>
               </PopoverContent>
             </Popover>
 
@@ -96,7 +126,7 @@ export function RescheduleModal({
                 variant="secondary"
                 data-testid="button-date-minus"
                 className="flex-1 rounded-xl h-10 bg-muted/50"
-                onClick={() => setDate((d) => subDays(d, 1))}
+                onClick={() => handleAdjustDate(-1)}
               >
                 <Minus className="h-4 w-4" />
                 1 день
@@ -105,7 +135,7 @@ export function RescheduleModal({
                 variant="secondary"
                 data-testid="button-date-plus"
                 className="flex-1 rounded-xl h-10 bg-muted/50"
-                onClick={() => setDate((d) => addDays(d, 1))}
+                onClick={() => handleAdjustDate(1)}
               >
                 <Plus className="h-4 w-4" />
                 1 день

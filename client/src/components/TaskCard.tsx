@@ -15,7 +15,7 @@ interface TaskCardProps {
   badgeLabel?: string;
 }
 
-const ACTION_BUTTONS = ["Завтра", "Через день", "Через неделю", "Через месяц", "Пн/Ср", "Вт/Чт", "Вых", "Custom"];
+const ACTION_BUTTONS = ["Завтра", "Через день", "Через неделю", "Через месяц", "Через год", "Пн/Ср", "Вт/Чт", "Вых", "Custom"];
 
 export function TaskCard({ id, text, dayKey, isActionable, isOverdue, badgeLabel }: TaskCardProps) {
   const moveTask = useMoveTask();
