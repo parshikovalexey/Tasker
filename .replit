@@ -38,13 +38,13 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "npm start"
 waitForPort = 5000
 
 [userenv]
 
 [userenv.development]
-VITE_USE_MOCK_STORAGE = "true"
+VITE_USE_MOCK_STORAGE = "false"
 
 [userenv.production]
 VITE_USE_MOCK_STORAGE = "false"
