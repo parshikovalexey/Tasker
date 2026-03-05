@@ -167,4 +167,11 @@ export const vkStorage = {
     const filtered = tasks.filter((t) => t.id !== taskId);
     await storageSet(key, filtered);
   },
+
+  /**
+   * Загружает задачи конкретного ключа из VK Storage.
+   */
+  async loadKey(key: string): Promise<Task[]> {
+    return getTasksForKey(key);
+  },
 };

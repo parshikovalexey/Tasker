@@ -16,6 +16,7 @@ export type { Task, StorageData };
 
 export interface ITaskStorage {
   getAll(): Promise<StorageData>;
+  loadKey(key: string): Promise<Task[]>;
   addTask(key: string, text: string, color?: string): Promise<Task>;
   moveTask(taskId: string, fromKey: string, toKey: string, newText?: string, newColor?: string): Promise<void>;
   deleteTask(taskId: string, key: string): Promise<void>;

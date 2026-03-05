@@ -83,4 +83,9 @@ export const mockStorage = {
     if (!memoryStorage[key]) return;
     memoryStorage[key] = memoryStorage[key].filter((t) => t.id !== taskId);
   },
+
+  async loadKey(key: string): Promise<Task[]> {
+    await delay(50);
+    return JSON.parse(JSON.stringify(memoryStorage[key] || []));
+  },
 };

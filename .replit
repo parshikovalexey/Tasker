@@ -33,18 +33,18 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm start"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
 
 [userenv]
 
 [userenv.development]
-VITE_USE_MOCK_STORAGE = "false"
+VITE_USE_MOCK_STORAGE = "true"
 
 [userenv.production]
 VITE_USE_MOCK_STORAGE = "false"
