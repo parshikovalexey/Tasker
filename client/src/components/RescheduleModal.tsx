@@ -127,19 +127,23 @@ export function RescheduleModal({
         <div className="space-y-4">
           {/* Color picker */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* No color — small neutral pill */}
+            {/* No color — circle with slash */}
             <button
               data-testid="color-none"
               onClick={() => setColorId(undefined)}
+              title="Без цвета"
               className={cn(
-                "h-7 px-3 rounded-full border-2 transition-all flex items-center justify-center bg-muted text-[11px] font-medium text-muted-foreground",
+                "h-7 w-7 rounded-full border-2 transition-all flex items-center justify-center bg-muted relative overflow-hidden",
                 !colorId
-                  ? "border-foreground/40 ring-1 ring-foreground/20"
-                  : "border-border hover:border-foreground/20"
+                  ? "border-foreground/50 scale-110 shadow-sm"
+                  : "border-border hover:border-foreground/30 hover:scale-105"
               )}
             >
-              {!colorId ? <Check className="h-3 w-3 mr-1 opacity-60" /> : null}
-              Без цвета
+              {/* diagonal slash */}
+              <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span className="block w-[1.5px] h-4 bg-muted-foreground/40 rotate-45 rounded-full" />
+              </span>
+              {!colorId && <Check className="h-3 w-3 text-foreground/60 relative z-10" />}
             </button>
 
             {TASK_COLORS.map((c) =>

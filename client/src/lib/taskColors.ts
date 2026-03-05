@@ -12,8 +12,8 @@ export const TASK_COLORS: TaskColor[] = [
     label: 'Goal',
     swatch: '#8b5cf6',
     storageKey: 'goals',
-    // violet — насыщенный фиолетовый фон
-    card: 'bg-violet-100 border-violet-300 dark:bg-violet-900/50 dark:border-violet-500/70',
+    // violet — насыщенный в обеих темах
+    card: 'bg-violet-200 border-violet-400 dark:bg-violet-900/50 dark:border-violet-500/70',
   },
   {
     id: 'everyday',
@@ -43,7 +43,8 @@ export const TASK_COLORS: TaskColor[] = [
     label: '',
     swatch: '#22c55e',
     storageKey: null,
-    card: 'bg-green-100 border-green-300 dark:bg-green-900/50 dark:border-green-500/70',
+    // более насыщенный зелёный — явно отличается от cyan Everyday
+    card: 'bg-green-200 border-green-400 dark:bg-green-900/50 dark:border-green-500/70',
   },
   {
     id: 'rose',
