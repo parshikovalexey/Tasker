@@ -7,8 +7,10 @@
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
+    "start-win": "set NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "deploy": "vk-miniapps-deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -44,6 +46,8 @@
     "@types/uuid": "^10.0.0",
     "@vkontakte/vk-bridge": "^2.15.11",
     "@vkontakte/vk-bridge-mock": "^2.2.0",
+    "@vkontakte/vk-mini-apps-router": "^1.8.4",
+    "@vkontakte/vk-miniapps-deploy": "^1.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -100,7 +104,7 @@
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.20.5",
+    "tsx": "^4.21.0",
     "typescript": "5.6.3",
     "vite": "^7.3.0"
   },
