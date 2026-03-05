@@ -1,24 +1,19 @@
 /**
  * VK Bridge resolver.
  *
- * Выбор реализации bridge:
- *   DEV  (VITE_USE_MOCK_STORAGE=true или режим разработки) → vk-bridge-mock
- *   PROD (VITE_USE_MOCK_STORAGE=false)                     → настоящий vk-bridge
+ * Выбор реализации bridge зависит исключительно от режима сборки Vite:
+ *   DEV  → vk-bridge-mock  (симуляция VK API, без реального окружения ВКонтакте)
+ *   PROD → настоящий vk-bridge
  *
- * Чтобы принудительно использовать мок в любом режиме:
- *   добавьте VITE_USE_MOCK_STORAGE=true в .env
- * Чтобы принудительно использовать реальный bridge в dev:
- *   добавьте VITE_USE_MOCK_STORAGE=false в .env
+ * Флаг VITE_USE_MOCK_STORAGE управляет только выбором хранилища (storage.ts),
+ * но не выбором bridge.
  */
 
 import realBridge from '@vkontakte/vk-bridge';
 import mockBridge from '@vkontakte/vk-bridge-mock';
 
-const envFlag = import.meta.env.VITE_USE_MOCK_STORAGE;
-const useMock = envFlag !== undefined ? envFlag === 'true' : import.meta.env.DEV;
-
-export const bridge = useMock ? mockBridge : realBridge;
-export const isMock = useMock;
+export const isMock = import.meta.env.DEV;
+export const bridge = isMock ? mockBridge : realBridge;
 
 // Инициализация моста (нужна для реального окружения VK)
 bridge.send('VKWebAppInit', {}).catch(() => {

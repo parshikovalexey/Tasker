@@ -1,9 +1,10 @@
 /**
  * Резолвер хранилища.
  *
- * VITE_USE_MOCK_STORAGE=true  → in-memory mockStorage (seed-данные, без VK)
- * VITE_USE_MOCK_STORAGE=false → vkStorage через VK Bridge (мок или реальный)
- * По умолчанию в dev-режиме Vite → vkStorage с vk-bridge-mock
+ * VITE_USE_MOCK_STORAGE=true  → in-memory mockStorage (seed-данные, без VK Bridge)
+ * VITE_USE_MOCK_STORAGE=false → vkStorage через VK Bridge
+ *                                 DEV  → vk-bridge-mock (симуляция)
+ *                                 PROD → настоящий vk-bridge
  *
  * Оба хранилища реализуют одинаковый интерфейс ITaskStorage.
  */
