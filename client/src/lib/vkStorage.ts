@@ -42,7 +42,10 @@ async function storageGet(keys: string[]): Promise<Record<string, Task[]>> {
 }
 
 async function storageSet(key: string, tasks: Task[]): Promise<void> {
-  await bridge.send('VKWebAppStorageSet', { key, value: JSON.stringify(tasks) });
+  // Пустой массив → пишем "" (пустую строку), а не "[]"
+  // Это экономит место и явно сигнализирует об очищенном ключе
+  const value = tasks.length === 0 ? '' : JSON.stringify(tasks);
+  await bridge.send('VKWebAppStorageSet', { key, value });
 }
 
 async function getTasksForKey(key: string): Promise<Task[]> {
