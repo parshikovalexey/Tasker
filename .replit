@@ -37,3 +37,11 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.development]
+VITE_USE_MOCK_STORAGE = "true"
+
+[userenv.production]
+VITE_USE_MOCK_STORAGE = "false"
