@@ -18,39 +18,55 @@ interface KeyInfo {
 interface ServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Если передан — компактный режим: показывает только эти ключи без загрузки из хранилища */
+  loadedStorage?: StorageData;
 }
 
-export function ServiceModal({ isOpen, onClose }: ServiceModalProps) {
+function buildKeyInfos(keys: string[], data: StorageData): KeyInfo[] {
+  const uniqueKeys = [...new Set(keys)];
+  const infos: KeyInfo[] = uniqueKeys.map((k) => {
+    const tasks = data[k] ?? [];
+    const jsonStr = tasks.length > 0 ? JSON.stringify(tasks) : "";
+    const sizeBytes = new Blob([jsonStr]).size;
+    return { key: k, taskCount: tasks.length, sizeBytes };
+  });
+  infos.sort((a, b) => {
+    const special = ["goals", "everyday", "done"];
+    const ai = special.indexOf(a.key);
+    const bi = special.indexOf(b.key);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return b.taskCount - a.taskCount || a.key.localeCompare(b.key);
+  });
+  return infos;
+}
+
+export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalProps) {
+  const isCompact = !!loadedStorage;
   const [loading, setLoading] = useState(false);
   const [keyInfos, setKeyInfos] = useState<KeyInfo[]>([]);
   const [totalKeys, setTotalKeys] = useState(0);
 
   useEffect(() => {
     if (!isOpen) return;
-    setLoading(true);
     setKeyInfos([]);
 
+    if (isCompact) {
+      const keys = Object.keys(loadedStorage);
+      const uniqueKeys = [...new Set(keys)];
+      setTotalKeys(uniqueKeys.length);
+      setKeyInfos(buildKeyInfos(uniqueKeys, loadedStorage));
+      return;
+    }
+
+    setLoading(true);
     storage
       .getFullSnapshot()
       .then(({ keys, data }) => {
-        setTotalKeys(keys.length);
-        const infos: KeyInfo[] = keys.map((k) => {
-          const tasks = data[k] ?? [];
-          const jsonStr = tasks.length > 0 ? JSON.stringify(tasks) : "";
-          const sizeBytes = new Blob([jsonStr]).size;
-          return { key: k, taskCount: tasks.length, sizeBytes };
-        });
-        // Сортировка: специальные ключи вверх, потом по убыванию задач
-        infos.sort((a, b) => {
-          const special = ["goals", "everyday", "done"];
-          const ai = special.indexOf(a.key);
-          const bi = special.indexOf(b.key);
-          if (ai !== -1 && bi !== -1) return ai - bi;
-          if (ai !== -1) return -1;
-          if (bi !== -1) return 1;
-          return b.taskCount - a.taskCount || a.key.localeCompare(b.key);
-        });
-        setKeyInfos(infos);
+        const uniqueKeys = [...new Set(keys)];
+        setTotalKeys(uniqueKeys.length);
+        setKeyInfos(buildKeyInfos(uniqueKeys, data));
       })
       .finally(() => setLoading(false));
   }, [isOpen]);
@@ -71,7 +87,7 @@ export function ServiceModal({ isOpen, onClose }: ServiceModalProps) {
         <DialogHeader>
           <DialogTitle className="text-xl font-display flex items-center gap-2">
             <Key className="h-5 w-5 text-muted-foreground" />
-            Сервисная информация
+            {isCompact ? "Загруженные ключи" : "Сервисная информация"}
           </DialogTitle>
         </DialogHeader>
 
@@ -81,27 +97,34 @@ export function ServiceModal({ isOpen, onClose }: ServiceModalProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-4 overflow-hidden">
-            {/* Лимиты */}
+            {/* Статистика использования */}
             <div className="rounded-xl bg-muted/50 p-3 space-y-3">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Info className="h-3.5 w-3.5 flex-shrink-0" />
                 <span>
-                  Лимиты VK Storage: <b>1000 ключей</b> максимум,{" "}
-                  <b>4096 байт</b> на ключ
+                  {isCompact
+                    ? "Показаны ключи, загруженные в текущей сессии"
+                    : <>Лимиты VK Storage: <b>1000 ключей</b> максимум, <b>4096 байт</b> на ключ</>}
                 </span>
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Ключей использовано</span>
-                  <span className={cn("font-semibold", keyUsageColor)}>
-                    {totalKeys} / {VK_MAX_KEYS} ({usagePercent}%)
+                  <span className="text-muted-foreground">
+                    {isCompact ? "Загружено ключей" : "Ключей использовано"}
+                  </span>
+                  <span className={cn("font-semibold", isCompact ? "" : keyUsageColor)}>
+                    {isCompact ? totalKeys : `${totalKeys} / ${VK_MAX_KEYS} (${usagePercent}%)`}
                   </span>
                 </div>
-                <Progress value={usagePercent} className="h-1.5" />
-                <p className="text-xs text-muted-foreground">
-                  Осталось: <b>{remainingKeys}</b> свободных ключей
-                </p>
+                {!isCompact && (
+                  <>
+                    <Progress value={usagePercent} className="h-1.5" />
+                    <p className="text-xs text-muted-foreground">
+                      Осталось: <b>{remainingKeys}</b> свободных ключей
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 

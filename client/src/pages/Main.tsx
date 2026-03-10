@@ -3,15 +3,17 @@ import { useTasks } from "@/hooks/use-tasks";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DayGroup } from "@/components/DayGroup";
 import { ExportModal } from "@/components/ExportModal";
+import { ServiceModal } from "@/components/ServiceModal";
 import { isPastDay, formatDateKey } from "@/lib/dateUtils";
 import { addDays } from "date-fns";
-import { CheckSquare, Download } from "lucide-react";
+import { CheckSquare, Download, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Main() {
   const { data: storageData, isLoading } = useTasks();
   const [exportOpen, setExportOpen] = useState(false);
+  const [serviceOpen, setServiceOpen] = useState(false);
 
   if (isLoading || !storageData) {
     return (
@@ -53,6 +55,21 @@ export default function Main() {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                data-testid="button-open-service"
+                onClick={() => setServiceOpen(true)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <KeyRound className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Ключи хранилища</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
                 data-testid="button-open-export"
                 onClick={() => setExportOpen(true)}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -72,6 +89,12 @@ export default function Main() {
       <ExportModal
         isOpen={exportOpen}
         onClose={() => setExportOpen(false)}
+        loadedStorage={storageData}
+      />
+
+      <ServiceModal
+        isOpen={serviceOpen}
+        onClose={() => setServiceOpen(false)}
         loadedStorage={storageData}
       />
 
