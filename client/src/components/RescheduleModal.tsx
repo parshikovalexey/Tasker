@@ -221,6 +221,8 @@ export function RescheduleModal({
                   month={calendarMonth}
                   onMonthChange={setCalendarMonth}
                   components={{ Caption: CustomCaption }}
+                  locale={ru}
+                  weekStartsOn={1}
                   initialFocus
                 />
               </PopoverContent>
