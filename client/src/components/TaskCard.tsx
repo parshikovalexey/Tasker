@@ -2,9 +2,19 @@ import { useState } from "react";
 import { LinkifyText } from "./LinkifyText";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Pencil } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useMoveTask } from "@/hooks/use-tasks";
 import { RescheduleModal } from "./RescheduleModal";
-import { calculateDate } from "@/lib/dateUtils";
+import { calculateDate, parseDateKey } from "@/lib/dateUtils";
 import { getColorById } from "@/lib/taskColors";
 import { cn } from "@/lib/utils";
 
@@ -23,18 +33,31 @@ const ACTION_BUTTONS = [
   "Пн/Ср", "Вт/Чт", "Вых", "Custom",
 ];
 
+function getInitialDateForKey(dayKey: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return parseDateKey(dayKey);
+  return new Date();
+}
+
 export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, badgeLabel }: TaskCardProps) {
   const moveTask = useMoveTask();
+
+  // Reschedule quick-action modal
   const [rescheduleState, setRescheduleState] = useState<{ isOpen: boolean; date: Date }>({
     isOpen: false,
     date: new Date(),
   });
+
+  // Edit modal (pencil button)
   const [editOpen, setEditOpen] = useState(false);
+
+  // Confirm "done" dialog
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const taskColor = getColorById(color);
 
-  const handleDone = () => {
+  const handleDoneConfirmed = () => {
     moveTask.mutate({ id, from: dayKey, to: "done" });
+    setConfirmOpen(false);
   };
 
   const handleAction = (action: string) => {
@@ -50,8 +73,8 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
 
   const showColorBadge = taskColor?.label && !badgeLabel;
 
-  // goals/everyday tasks: not actionable but editable
-  const isEditable = !isActionable && !!badgeLabel;
+  // goals/everyday: !isActionable + badgeLabel
+  const isGoalOrEveryday = !isActionable && !!badgeLabel;
 
   return (
     <>
@@ -63,7 +86,6 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
       >
         <div className="flex gap-3">
           <div className="flex-1 min-w-0">
-            {/* Source badge (goals/everyday origin from DayGroup) */}
             {badgeLabel && (
               <Badge
                 variant="secondary"
@@ -73,7 +95,6 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
               </Badge>
             )}
 
-            {/* Named color badge with the actual swatch color */}
             {showColorBadge && (
               <Badge
                 variant="outline"
@@ -90,10 +111,10 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
           </div>
 
           <div className="flex flex-col gap-1 items-center mt-1 flex-shrink-0">
-            {/* Complete button for actionable tasks */}
+            {/* Кнопка "Выполнено" — открывает подтверждение */}
             {isActionable && (
               <button
-                onClick={handleDone}
+                onClick={() => setConfirmOpen(true)}
                 data-testid={`button-done-${id}`}
                 className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-transparent hover:border-primary hover:text-primary hover:bg-primary/10 transition-all active:scale-95"
                 aria-label="Выполнено"
@@ -102,21 +123,19 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
               </button>
             )}
 
-            {/* Edit button for goals/everyday tasks */}
-            {isEditable && (
-              <button
-                onClick={() => setEditOpen(true)}
-                data-testid={`button-edit-${id}`}
-                className="h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition-all active:scale-95 opacity-0 group-hover:opacity-100"
-                aria-label="Редактировать"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            )}
+            {/* Кнопка редактирования — для обычных и goals/everyday задач */}
+            <button
+              onClick={() => setEditOpen(true)}
+              data-testid={`button-edit-${id}`}
+              className="h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition-all active:scale-95 opacity-0 group-hover:opacity-100"
+              aria-label="Редактировать"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 
-        {/* Reschedule quick-actions for regular tasks */}
+        {/* Быстрые кнопки переноса */}
         {isActionable && (
           <div className="mt-4 flex flex-wrap gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
             {ACTION_BUTTONS.map((action) => (
@@ -137,29 +156,50 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
         )}
       </div>
 
-      {/* Reschedule modal (for regular tasks' quick-actions) */}
-      <RescheduleModal
-        isOpen={rescheduleState.isOpen}
-        onClose={() => setRescheduleState((prev) => ({ ...prev, isOpen: false }))}
-        taskId={id}
-        initialText={text}
-        initialColor={color}
-        fromKey={dayKey}
-        initialDate={rescheduleState.date}
-      />
+      {/* Confirm done */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent className="rounded-2xl border-0 shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Отметить как выполненное?</AlertDialogTitle>
+            <AlertDialogDescription className="line-clamp-3">
+              «{text}»
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDoneConfirmed}
+              className="rounded-xl"
+            >
+              Выполнено
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Edit modal (for goals/everyday tasks) */}
-      {isEditable && (
+      {/* Reschedule modal (quick-action buttons) */}
+      {isActionable && (
         <RescheduleModal
-          isOpen={editOpen}
-          onClose={() => setEditOpen(false)}
+          isOpen={rescheduleState.isOpen}
+          onClose={() => setRescheduleState((prev) => ({ ...prev, isOpen: false }))}
           taskId={id}
           initialText={text}
           initialColor={color}
           fromKey={dayKey}
-          initialDate={new Date()}
+          initialDate={rescheduleState.date}
         />
       )}
+
+      {/* Edit modal (pencil button — для всех задач) */}
+      <RescheduleModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        taskId={id}
+        initialText={text}
+        initialColor={color}
+        fromKey={dayKey}
+        initialDate={isGoalOrEveryday ? new Date() : getInitialDateForKey(dayKey)}
+      />
     </>
   );
 }
