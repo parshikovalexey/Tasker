@@ -1,10 +1,15 @@
-import { Link } from "wouter";
 import { ArrowRight, CheckSquare } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useVKUser } from "@/hooks/use-vk-user";
+import { useRouteNavigator } from '@vkontakte/vk-mini-apps-router';
 
 export default function Welcome() {
   const userState = useVKUser();
+  const navigator = useRouteNavigator();
+
+  const handleStart = () => {
+    navigator.push('/main');
+  };
 
   const firstName =
     userState.status === "success" ? userState.user.first_name : null;
@@ -65,8 +70,8 @@ export default function Welcome() {
         </div>
 
         {/* Кнопка перехода */}
-        <Link
-          href="/main"
+        <button
+          onClick={handleStart}
           data-testid="link-start"
           className="mt-8 w-full group relative inline-flex h-14 items-center justify-center overflow-hidden rounded-2xl bg-primary px-8 font-medium text-primary-foreground shadow-xl shadow-primary/25 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/40 active:scale-[0.98]"
         >
@@ -75,7 +80,7 @@ export default function Welcome() {
           <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-12deg)_translateX(-100%)] group-hover:duration-1000 group-hover:[transform:skew(-12deg)_translateX(100%)]">
             <div className="relative h-full w-8 bg-white/20" />
           </div>
-        </Link>
+        </button>
 
       </div>
 
