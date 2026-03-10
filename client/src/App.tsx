@@ -32,7 +32,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <RouterProvider router={router}>
-          <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+          <div className="min-h-screen bg-muted/20 flex items-center justify-center md:items-start md:px-4 md:py-4 lg:px-8 lg:py-6">
             <AppContent />
           </div>
           <Toaster />

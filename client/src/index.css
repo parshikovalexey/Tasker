@@ -86,7 +86,7 @@
 }
 
 .mobile-container {
-  @apply mx-auto w-full max-w-md min-h-[100dvh] bg-background shadow-2xl shadow-black/5 relative overflow-hidden;
+  @apply mx-auto w-full max-w-md md:max-w-full min-h-[100dvh] bg-background shadow-2xl md:shadow-none shadow-black/5 relative overflow-hidden;
 }
 
 .mobile-container::before {
