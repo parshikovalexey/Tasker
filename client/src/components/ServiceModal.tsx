@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Key, Info } from "lucide-react";
+import { Loader2, BarChart2, Info } from "lucide-react";
 import { storage, type StorageData } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ interface KeyInfo {
 interface ServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Если передан — компактный режим: показывает только эти ключи без загрузки из хранилища */
+  /** Если передан — компактный режим: показывает загруженные ключи + done */
   loadedStorage?: StorageData;
 }
 
@@ -53,10 +53,21 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
     setKeyInfos([]);
 
     if (isCompact) {
-      const keys = Object.keys(loadedStorage);
-      const uniqueKeys = [...new Set(keys)];
-      setTotalKeys(uniqueKeys.length);
-      setKeyInfos(buildKeyInfos(uniqueKeys, loadedStorage));
+      setLoading(true);
+      const mergedData: StorageData = { ...loadedStorage };
+      const baseKeys = Object.keys(loadedStorage);
+
+      storage
+        .loadKey("done")
+        .then((doneTasks) => {
+          if (!("done" in mergedData)) {
+            mergedData["done"] = doneTasks;
+          }
+          const allKeys = [...new Set([...baseKeys, "done"])];
+          setTotalKeys(allKeys.length);
+          setKeyInfos(buildKeyInfos(allKeys, mergedData));
+        })
+        .finally(() => setLoading(false));
       return;
     }
 
@@ -86,8 +97,8 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
       <DialogContent className="sm:max-w-md rounded-2xl border-0 shadow-2xl bg-card max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-display flex items-center gap-2">
-            <Key className="h-5 w-5 text-muted-foreground" />
-            {isCompact ? "Загруженные ключи" : "Сервисная информация"}
+            <BarChart2 className="h-5 w-5 text-muted-foreground" />
+            Сервисная информация
           </DialogTitle>
         </DialogHeader>
 
@@ -97,14 +108,16 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
           </div>
         ) : (
           <div className="flex flex-col gap-4 overflow-hidden">
-            {/* Статистика использования */}
+            {/* Подсказка и лимиты */}
             <div className="rounded-xl bg-muted/50 p-3 space-y-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Info className="h-3.5 w-3.5 flex-shrink-0" />
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                 <span>
                   {isCompact
-                    ? "Показаны ключи, загруженные в текущей сессии"
-                    : <>Лимиты VK Storage: <b>1000 ключей</b> максимум, <b>4096 байт</b> на ключ</>}
+                    ? "Показаны загруженные ключи и ключ «done»."
+                    : "Все ключи хранилища."}{" "}
+                  Лимиты VK Storage: <b>1000 ключей</b> максимум,{" "}
+                  <b>4096 байт</b> на ключ.
                 </span>
               </div>
 
@@ -114,7 +127,9 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
                     {isCompact ? "Загружено ключей" : "Ключей использовано"}
                   </span>
                   <span className={cn("font-semibold", isCompact ? "" : keyUsageColor)}>
-                    {isCompact ? totalKeys : `${totalKeys} / ${VK_MAX_KEYS} (${usagePercent}%)`}
+                    {isCompact
+                      ? totalKeys
+                      : `${totalKeys} / ${VK_MAX_KEYS} (${usagePercent}%)`}
                   </span>
                 </div>
                 {!isCompact && (

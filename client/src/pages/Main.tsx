@@ -6,7 +6,7 @@ import { ExportModal } from "@/components/ExportModal";
 import { ServiceModal } from "@/components/ServiceModal";
 import { isPastDay, formatDateKey } from "@/lib/dateUtils";
 import { addDays } from "date-fns";
-import { CheckSquare, Download, KeyRound } from "lucide-react";
+import { CheckSquare, Download, BarChart2 } from "lucide-react";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -59,11 +59,11 @@ export default function Main() {
                 onClick={() => setServiceOpen(true)}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                <KeyRound className="w-4 h-4" />
+                <BarChart2 className="w-4 h-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>Ключи хранилища</p>
+              <p>Сервисная информация</p>
             </TooltipContent>
           </Tooltip>
 
