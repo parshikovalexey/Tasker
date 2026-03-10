@@ -45,3 +45,15 @@ export function useMoveTask() {
     },
   });
 }
+
+export function useCompleteEverydayTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      return storage.completeEverydayTask(taskId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY });
+    },
+  });
+}

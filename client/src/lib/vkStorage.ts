@@ -16,6 +16,7 @@ export type Task = {
   id: string;
   text: string;
   color?: string;
+  nextDate?: string; // для everyday: следующая дата появления (yyyy-MM-dd)
 };
 
 export type StorageData = Record<string, Task[]>;
@@ -208,5 +209,17 @@ export const vkStorage = {
    */
   async clearKey(key: string): Promise<void> {
     await bridge.send('VKWebAppStorageSet', { key, value: '' });
+  },
+
+  /**
+   * Отмечает everyday-задачу как выполненную на сегодня:
+   * устанавливает nextDate = завтра.
+   */
+  async completeEverydayTask(taskId: string): Promise<void> {
+    const tasks = await getTasksForKey('everyday');
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    task.nextDate = toDateKey(addDays(new Date(), 1));
+    await storageSet('everyday', tasks);
   },
 };

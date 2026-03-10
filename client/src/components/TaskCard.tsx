@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LinkifyText } from "./LinkifyText";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Pencil } from "lucide-react";
+import { CheckCircle2, Pencil, RefreshCw } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useMoveTask } from "@/hooks/use-tasks";
+import { useMoveTask, useCompleteEverydayTask } from "@/hooks/use-tasks";
 import { RescheduleModal } from "./RescheduleModal";
 import { calculateDate, parseDateKey } from "@/lib/dateUtils";
 import { getColorById } from "@/lib/taskColors";
@@ -40,6 +40,9 @@ function getInitialDateForKey(dayKey: string): Date {
 
 export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, badgeLabel }: TaskCardProps) {
   const moveTask = useMoveTask();
+  const completeEveryday = useCompleteEverydayTask();
+
+  const isEveryday = badgeLabel === 'everyday';
 
   // Reschedule quick-action modal
   const [rescheduleState, setRescheduleState] = useState<{ isOpen: boolean; date: Date }>({
@@ -50,14 +53,22 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
   // Edit modal (pencil button)
   const [editOpen, setEditOpen] = useState(false);
 
-  // Confirm "done" dialog
+  // Confirm "done" dialog (regular tasks)
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  // Confirm "done for today" dialog (everyday tasks)
+  const [confirmEverydayOpen, setConfirmEverydayOpen] = useState(false);
 
   const taskColor = getColorById(color);
 
   const handleDoneConfirmed = () => {
     moveTask.mutate({ id, from: dayKey, to: "done" });
     setConfirmOpen(false);
+  };
+
+  const handleEverydayDoneConfirmed = () => {
+    completeEveryday.mutate(id);
+    setConfirmEverydayOpen(false);
   };
 
   const handleAction = (action: string) => {
@@ -111,7 +122,7 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
           </div>
 
           <div className="flex flex-col gap-1 items-center mt-1 flex-shrink-0">
-            {/* Кнопка "Выполнено" — открывает подтверждение */}
+            {/* Кнопка "Выполнено" — для обычных задач */}
             {isActionable && (
               <button
                 onClick={() => setConfirmOpen(true)}
@@ -120,6 +131,18 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
                 aria-label="Выполнено"
               >
                 <CheckCircle2 className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Кнопка "Выполнено на сегодня" — только для everyday */}
+            {isEveryday && (
+              <button
+                onClick={() => setConfirmEverydayOpen(true)}
+                data-testid={`button-done-everyday-${id}`}
+                className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center text-transparent hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all active:scale-95"
+                aria-label="Выполнено на сегодня"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
               </button>
             )}
 
@@ -156,7 +179,7 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
         )}
       </div>
 
-      {/* Confirm done */}
+      {/* Confirm done (обычные задачи) */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent className="rounded-2xl border-0 shadow-2xl">
           <AlertDialogHeader>
@@ -170,6 +193,27 @@ export function TaskCard({ id, text, color, dayKey, isActionable, isOverdue, bad
             <AlertDialogAction
               onClick={handleDoneConfirmed}
               className="rounded-xl"
+            >
+              Выполнено
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirm done for today (everyday задачи) */}
+      <AlertDialog open={confirmEverydayOpen} onOpenChange={setConfirmEverydayOpen}>
+        <AlertDialogContent className="rounded-2xl border-0 shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Выполнено на сегодня?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Задача появится снова завтра.{"\n"}«{text}»
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEverydayDoneConfirmed}
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               Выполнено
             </AlertDialogAction>

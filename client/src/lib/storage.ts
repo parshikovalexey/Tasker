@@ -23,6 +23,7 @@ export interface ITaskStorage {
   addTask(key: string, text: string, color?: string): Promise<Task>;
   moveTask(taskId: string, fromKey: string, toKey: string, newText?: string, newColor?: string): Promise<void>;
   deleteTask(taskId: string, key: string): Promise<void>;
+  completeEverydayTask(taskId: string): Promise<void>;
 }
 
 /**

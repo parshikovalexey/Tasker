@@ -5,6 +5,7 @@ export type Task = {
   id: string;
   text: string;
   color?: string;
+  nextDate?: string; // для everyday: следующая дата появления (yyyy-MM-dd)
 };
 
 export type StorageData = Record<string, Task[]>;
@@ -24,7 +25,7 @@ let memoryStorage: StorageData = {
   everyday: [
     { id: uuidv4(), text: 'Зарядка 15 минут', color: 'everyday' },
     { id: uuidv4(), text: 'Выпить 2 литра воды', color: 'everyday' },
-    { id: uuidv4(), text: 'Медитация 10 минут', color: 'everyday' },
+    { id: uuidv4(), text: 'Медитация 10 минут', color: 'everyday', nextDate: tomorrowKey },
   ],
   [twoDaysAgoKey]: [
     { id: uuidv4(), text: 'Устаревший баг в проде — https://github.com/org/repo/issues/1234', color: 'critical' },
@@ -49,6 +50,10 @@ let memoryStorage: StorageData = {
     { id: uuidv4(), text: 'Done: Настроить CI/CD пайплайн' },
   ],
 };
+
+function toDateKey(date: Date): string {
+  return format(date, 'yyyy-MM-dd');
+}
 
 const delay = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
 
@@ -103,5 +108,13 @@ export const mockStorage = {
   async clearKey(key: string): Promise<void> {
     await delay(50);
     memoryStorage[key] = [];
+  },
+
+  async completeEverydayTask(taskId: string): Promise<void> {
+    await delay(100);
+    const tasks = memoryStorage['everyday'] || [];
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    task.nextDate = toDateKey(addDays(new Date(), 1));
   },
 };

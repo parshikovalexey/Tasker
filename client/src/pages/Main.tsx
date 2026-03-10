@@ -9,6 +9,9 @@ import { addDays } from "date-fns";
 import { CheckSquare, Download, BarChart2 } from "lucide-react";
 import { Link } from "wouter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Task } from "@/lib/storage";
+
+type TaskWithKey = Task & { originalKey?: string };
 
 export default function Main() {
   const { data: storageData, isLoading } = useTasks();
@@ -30,15 +33,33 @@ export default function Main() {
     .filter(key => isPastDay(key) && storageData[key].length > 0)
     .sort();
 
-  const todayTasks = [
+  // Разделяем everyday задачи: на сегодня vs на будущее
+  const everydayTasks = storageData['everyday'] || [];
+  const everydayToday = everydayTasks.filter(
+    (t) => !t.nextDate || t.nextDate <= todayKey,
+  );
+  const everydayFutureMap: Record<string, TaskWithKey[]> = {};
+  for (const task of everydayTasks) {
+    if (task.nextDate && task.nextDate > todayKey) {
+      if (!everydayFutureMap[task.nextDate]) everydayFutureMap[task.nextDate] = [];
+      everydayFutureMap[task.nextDate].push({ ...task, originalKey: 'everyday' });
+    }
+  }
+
+  const todayTasks: TaskWithKey[] = [
     ...(storageData['goals'] || []).map(t => ({ ...t, originalKey: 'goals' })),
-    ...(storageData['everyday'] || []).map(t => ({ ...t, originalKey: 'everyday' })),
+    ...everydayToday.map(t => ({ ...t, originalKey: 'everyday' })),
     ...(storageData[todayKey] || []),
   ];
 
   const futureKeys = Array.from({ length: 7 }).map((_, i) =>
     formatDateKey(addDays(todayDate, i + 1))
   );
+
+  const getFutureTasks = (key: string): TaskWithKey[] => [
+    ...(storageData[key] || []),
+    ...(everydayFutureMap[key] || []),
+  ];
 
   return (
     <div className="mobile-container flex flex-col">
@@ -128,7 +149,7 @@ export default function Main() {
             <DayGroup
               key={key}
               dayKey={key}
-              tasks={storageData[key] || []}
+              tasks={getFutureTasks(key)}
               defaultOpen={true}
             />
           ))}
