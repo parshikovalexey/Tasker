@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,19 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
   const [loading, setLoading] = useState(false);
   const [keyInfos, setKeyInfos] = useState<KeyInfo[]>([]);
   const [totalKeys, setTotalKeys] = useState(0);
+  const [fullModalOpen, setFullModalOpen] = useState(false);
+  const secretClickTimesRef = useRef<number[]>([]);
+
+  const handleTitleClick = () => {
+    if (!isCompact) return;
+    const now = Date.now();
+    const times = [...secretClickTimesRef.current, now].filter((t) => now - t < 1500);
+    secretClickTimesRef.current = times;
+    if (times.length >= 3) {
+      secretClickTimesRef.current = [];
+      setFullModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,10 +106,14 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
       : "text-emerald-600 dark:text-emerald-400";
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md rounded-2xl border-0 shadow-2xl bg-card max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-xl font-display flex items-center gap-2">
+          <DialogTitle
+            className="text-xl font-display flex items-center gap-2 cursor-default select-none"
+            onClick={handleTitleClick}
+          >
             <BarChart2 className="h-5 w-5 text-muted-foreground" />
             Сервисная информация
           </DialogTitle>
@@ -114,7 +131,7 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
                 <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
                 <span>
                   {isCompact
-                    ? "Показаны загруженные ключи и ключ «done»."
+                    ? "Показаны только загруженные задачи."
                     : "Все ключи хранилища."}{" "}
                   Лимиты VK Storage: <b>1000 ключей</b> максимум,{" "}
                   <b>4096 байт</b> на ключ.
@@ -210,5 +227,10 @@ export function ServiceModal({ isOpen, onClose, loadedStorage }: ServiceModalPro
         )}
       </DialogContent>
     </Dialog>
+
+    {isCompact && (
+      <ServiceModal isOpen={fullModalOpen} onClose={() => setFullModalOpen(false)} />
+    )}
+  </>
   );
 }
